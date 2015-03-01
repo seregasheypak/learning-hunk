@@ -1,0 +1,64 @@
+<coordinator-app name="import-milano-cdr-coord" frequency="${coord:days(1)}"
+                 start="${startTime}" end="${endTime}" timezone="${timezone}"  xmlns="uri:oozie:coordinator:0.4">
+
+    <controls>
+        <timeout>7200</timeout>
+        <concurrency>${concurrency}</concurrency>
+    </controls>
+
+    <datasets>
+        <dataset name="milano_cdr"
+                 frequency="${coord:days(1)}"
+                 initial-instance="2013-01-01T00:02Z"
+                 timezone="${timezone}">
+            <uri-template>${nameNode}/masterdata/stream/milano_cdr/${YEAR}/${MONTH}/${DAY}</uri-template>
+            <done-flag>_SUCCESS</done-flag>
+        </dataset>
+        <dataset name="ymd"
+                 frequency="${coord:days(1)}"
+                 initial-instance="2013-01-01T00:02Z"
+                 timezone="${timezone}">
+            <uri-template>${YEAR}/${MONTH}/${DAY}</uri-template>
+            <done-flag>_SUCCESS</done-flag>
+        </dataset>
+
+    </datasets>
+
+    <output-events>
+        <data-out name="ymd" dataset="ymd">
+            <instance>${coord:current(0)}</instance>
+        </data-out>
+        <data-out name="ymd_next" dataset="ymd">
+            <instance>${coord:current(1)}</instance>
+        </data-out>
+        <data-out name="milano_cdr_out" dataset="milano_cdr">
+            <instance>${coord:current(0)}</instance>
+        </data-out>
+
+    </output-events>
+
+
+
+    <action>
+        <workflow>
+            <app-path>${oozieAppHomeCatalog}/workflows/import-milano-cdr-wflow.xml</app-path>
+            <configuration>
+                <property>
+                    <name>milano_cdr_out_dir</name>
+                    <value>${coord:dataOut('milano_cdr_out')}</value>
+                </property>
+                <property>
+                    <name>ymd</name>
+                    <value>${coord:dataOut('ymd')}</value>
+                </property>
+                <property>
+                    <name>ymd_next</name>
+                    <value>${coord:dataOut('ymd_next')}</value>
+                </property>
+
+            </configuration>
+        </workflow>
+    </action>
+
+
+</coordinator-app>

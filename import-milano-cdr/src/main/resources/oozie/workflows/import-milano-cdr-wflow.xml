@@ -1,0 +1,100 @@
+<workflow-app name="import-milano-cdr-wflow" xmlns="uri:oozie:workflow:0.4">
+
+    <start to="import-milano-cdr" />
+
+    <action name="import-milano-cdr">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.4">
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="${milano_cdr_out_dir}"/>
+            </prepare>
+            <configuration>
+                <property>
+                    <name>mapred.map.max.attempts</name>
+                    <value>1</value>
+                </property>
+            </configuration>
+            <arg>import</arg>
+
+            <arg>--connect</arg>
+            <arg>${jdbcUrl}</arg>
+
+            <arg>--username</arg>
+            <arg>${dbUser}</arg>
+
+            <arg>--password</arg>
+            <arg>${dbPassword}</arg>
+
+            <arg>--table</arg>
+            <arg>${dbTableName}</arg>
+
+            <arg>--columns</arg>
+            <arg>"
+                square_id,
+                time_interval,
+                country_code,
+                sms_in,
+                sms_out,
+                call_in,
+                call_out,
+                inet_traffic
+                "
+            </arg>
+
+            <arg>--where</arg>
+            <arg>FROM_UNIXTIME(time_interval/1000) &gt;= STR_TO_DATE('${ymd}','%Y/%c/%e') and FROM_UNIXTIME(time_interval/1000) &lt; STR_TO_DATE('${ymd_next}', '%Y/%c/%e')</arg>
+
+            <arg>--map-column-java</arg>
+            <arg>square_id=Long,time_interval=Long,country_code=String,sms_in=Double,sms_out=Double,call_in=Double,call_out=Double,inet_traffic=Double</arg>
+
+            <arg>--target-dir</arg>
+            <arg>${milano_cdr_out_dir}</arg>
+
+            <arg>-m</arg>
+            <arg>1</arg>
+
+            <arg>--as-avrodatafile</arg>
+            <arg>--compression-codec</arg>
+            <arg>org.apache.hadoop.io.compress.SnappyCodec</arg>
+        </sqoop>
+
+        <ok to="end"/>
+        <error to="kill"/>
+    </action>
+
+    <!--<action name="simple_select">-->
+    <!--<hive2 xmlns="uri:oozie:hive-action:0.2">-->
+        <!--<job-tracker>${jobTracker}</job-tracker>-->
+        <!--<name-node>${nameNode}</name-node>-->
+        <!--<configuration>-->
+            <!--<property>-->
+                <!--<name>oozie.action.sharelib.for.hive</name>-->
+                <!--<value>hive2</value>-->
+            <!--</property>-->
+            <!--<property>-->
+                <!--<name>oozie.launcher.action.main.class</name>-->
+                <!--<value>org.apache.oozie.action.hadoop.Hive2Main</value>-->
+            <!--</property>-->
+        <!--</configuration>-->
+        <!--<jdbc-url>${hiveJdbcUrl}</jdbc-url>-->
+        <!--<script>add_partition.sql</script>-->
+        <!--<param>connectString=${connectString}</param>-->
+        <!--<param>tableName=${tableName}</param>-->
+        <!--<param>locationPath=${milano_cdr_out_dir}</param>-->
+    <!--</hive2>-->
+    <!--<ok to="end"/>-->
+    <!--<error to="kill"/>-->
+    <!--</action>-->
+
+
+
+
+
+    <kill name="kill">
+        <message>import failed: ${wf:errorMessage(wf:lastErrorNode())}</message>
+    </kill>
+
+    <end name="end" />
+
+</workflow-app>
