@@ -63,34 +63,6 @@
         <error to="kill"/>
     </action>
 
-    <!--<action name="simple_select">-->
-    <!--<hive2 xmlns="uri:oozie:hive-action:0.2">-->
-        <!--<job-tracker>${jobTracker}</job-tracker>-->
-        <!--<name-node>${nameNode}</name-node>-->
-        <!--<configuration>-->
-            <!--<property>-->
-                <!--<name>oozie.action.sharelib.for.hive</name>-->
-                <!--<value>hive2</value>-->
-            <!--</property>-->
-            <!--<property>-->
-                <!--<name>oozie.launcher.action.main.class</name>-->
-                <!--<value>org.apache.oozie.action.hadoop.Hive2Main</value>-->
-            <!--</property>-->
-        <!--</configuration>-->
-        <!--<jdbc-url>${hiveJdbcUrl}</jdbc-url>-->
-        <!--<script>add_partition.sql</script>-->
-        <!--<param>connectString=${connectString}</param>-->
-        <!--<param>tableName=${tableName}</param>-->
-        <!--<param>locationPath=${milano_cdr_out_dir}</param>-->
-    <!--</hive2>-->
-    <!--<ok to="end"/>-->
-    <!--<error to="kill"/>-->
-    <!--</action>-->
-
-
-
-
-
     <kill name="kill">
         <message>import failed: ${wf:errorMessage(wf:lastErrorNode())}</message>
     </kill>
