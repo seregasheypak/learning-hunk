@@ -3,7 +3,7 @@
     <start to="import-milano-cdr" />
 
     <action name="import-milano-cdr">
-        <sqoop xmlns="uri:oozie:sqoop-action:0.4">
+        <sqoop xmlns="uri:oozie:sqoop-action:0.2">
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
             <prepare>
